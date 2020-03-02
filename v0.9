@@ -1,0 +1,52 @@
+obj1=visa('agilent', 'GPIB0::9::INSTR'); %# Makineyi tanımla.
+clear ans;
+fopen(obj1); %# Makineye bağlan.
+%fprintf(obj1,'*IDN?'); %# Identity.
+%fscanf(obj1,'*IDN?'); %# Identity'i oku.
+fprintf(obj1,'SLVL 0.1');
+fprintf(obj1,'FREQ 5e-1');
+PlayFreq = [1:1:1000];
+voltage = [0.1:0.1:1];
+ 
+for vt=1:length(voltage)
+    fprintf(obj1,['slvl', sprintf('%.6f',voltage(vt))]);
+    
+    for ik=1:length(PlayFreq) %# 1 den 10 a kadar ölçüm yapacak loop. 10 kere yapacak.
+         
+     fprintf(obj1,['freq ',num2str(PlayFreq(ik))])
+     pause(.1); %# 1 Saniye aralıklarla ölçümü yap.
+     fprintf(obj1,'OUTP? 1'); %# Read komutu gönder.
+     fprintf(obj1,'OUTP? 2'); %# Read komutu gönder.
+     %fprintf('Ölçüm başarıyla yapıldı.\n');
+     Sonuclar1{vt,ik}=fscanf(obj1,'OUTP? 1'); %# Read komutunu oku ve Sonuçlar'a kaydet.
+     Sonuclar2{vt,ik}=fscanf(obj1,'OUTP? 2'); %# Read komutunu oku ve Sonuçlar'a kaydet.
+ 
+    end %# Loopun sonu.
+    
+ end   
+    fclose(obj1);
+    
+iwant1 = cellfun(@str2num,Sonuclar1);
+iwant2 = cellfun(@str2num,Sonuclar2);
+ 
+%subplot(2,2,1);
+%plot(PlayFreq,iwant1(1,:));
+ 
+%subplot(2,2,2);
+%plot(PlayFreq,iwant1(2,:))
+ 
+%subplot(2,2,3);
+%plot(PlayFreq,iwant2(1,:))
+ 
+%subplot(2,2,4);
+%plot(PlayFreq,iwant2(2,:));
+ 
+fileID1 = fopen('C:\Users\Administrator\Desktop\D_11_07_19\x.txt','wt');
+uzunluk1 = '%5d %5d %5d %5d %5d %5d %5d %5d %5d %5d\n';
+fprintf(fileID1, uzunluk1, iwant1);
+fclose(fileID1);
+ 
+fileID2 = fopen('C:\Users\Administrator\Desktop\D_11_07_19\y.txt','wt');
+uzunluk2 = '%5d %5d %5d %5d %5d %5d %5d %5d %5d %5d\n';
+fprintf(fileID2, uzunluk2, iwant2);
+fclose(fileID2);
